@@ -1,15 +1,16 @@
 import { useState } from "react";
 import "./App.css";
+import { Children } from "react";
 
 const animesData = [
   {
     mal_id: 21,
-    title: "One Piece",
-    year: 1999,
-    image: "https://cdn.myanimelist.net/images/anime/6/73245.jpg",
-    score: 8.71,
+    title: "Darling in the FranXX",
+    year: 2018,
+    image: "https://cdn.myanimelist.net/images/anime/1614/90408.jpg",
+    score: 7.2,
     synopsis:
-      "Barely surviving in a barrel after passing through a terrible whirlpool at sea, carefree Monkey D. Luffy ends up aboard a ship under attack by fearsome pirates. Despite being a naive-looking teenager, he is not to be underestimated. Unmatched in battle, Luffy is a pirate himself who resolutely pursues the coveted One Piece treasure and the King of the Pirates title that comes with it.",
+      "In the distant future, humanity has been driven to near-extinction by giant beasts known as Klaxosaurs, forcing the surviving humans to take refuge in massive fortress cities called Plantations. Children raised here are trained to pilot giant mechas known as FranXX—the only weapons known to be effective against the Klaxosaurs—in boy-girl pairs. Bred for the sole purpose of piloting these machines, these children know nothing of the outside world and are only able to prove their existence by defending their race.",
   },
   {
     mal_id: 20,
@@ -38,22 +39,61 @@ const animesData = [
     synopsis:
       'The appearance of "quirks", newly discovered super powers, has been steadily increasing over the years, with 80 percent of humanity possessing various abilities from manipulation of elements to shapeshifting. This leaves the remainder of the world completely powerless, and Izuku Midoriya is one such individual.',
   },
+  {
+    mal_id: 32222,
+    title: "Kyoukai no Kanata",
+    year: 2013,
+    image: "https://cdn.myanimelist.net/images/anime/3/85468.jpg",
+    score: 7.72,
+    synopsis:
+      'Mirai Kuriyama is the sole survivor of a clan of Spirit World warriors with the power to employ their blood as weapons. As such, Mirai is tasked with hunting down and killing "youmu"—creatures said to be the manifestation of negative human emotions. One day, while deep in thought on the school roof, Mirai comes across Akihito Kanbara, a rare half-breed of youmu in human form. In a panicked state, she plunges her blood saber into him only to realize that he s an immortal being. From then on, the two form an impromptu friendship that revolves around Mirai constantly trying to kill Akihito, in an effort to boost her own wavering confidence as a Spirit World warrior. Eventually, Akihito also manages to convince her to join the Literary Club, which houses two other powerful Spirit World warriors, Hiroomi and Mitsuki Nase.',
+  },
+  {
+    mal_id: 54223,
+    title: "Tomo-chan wa Onnanoko! Tomo-chan Is a Girl!",
+    year: 2023,
+    image: "https://cdn.myanimelist.net/images/anime/1444/131828.jpg",
+    score: 7.8,
+    synopsis:
+      "Childhood friends Tomo Aizawa and Junichirou Jun Kubota do everything together, whether it be training or just enjoying a fun day out. Anyone would think that these two are best friends for life. The only issue is that the tomboyish Tomo is in love with Jun, but he regards her like a brother.At the start of their first year of high school, Tomo confesses her feelings to Jun. However, her rough mannerisms and lack of hesitance to throw a punch do nothing to sway Jun's heart. Realizing that he will remain indifferent to her affections unless she does something about it, Tomo must find a way to knock some sense into Jun and open his eyes to what is right in front of him.",
+  },
 ];
 
 export default function App() {
+  const [animes, setAnimes] = useState(animesData);
+  const [selectedAnime, setSelectedAnime] = useState(animes[0]);
+
+  function handleSelectedAnime(id) {
+    const newAnime = animes.filter((anime) => anime.mal_id === id);
+    setSelectedAnime(newAnime[0]);
+  }
+
   return (
     <>
-      <NavBar />
-      <Main />
+      <NavBar>
+        <Search>
+          <NumResult animes={animes} />
+        </Search>
+      </NavBar>
+
+      <Main>
+        <Box>
+          <AnimeList animes={animes} onSelectedAnime={handleSelectedAnime} />
+        </Box>
+
+        <Box>
+          <AnimeDetail selectedAnime={selectedAnime} />
+        </Box>
+      </Main>
     </>
   );
 }
 
-function NavBar() {
+function NavBar({ children }) {
   return (
     <nav className="nav-bar">
       <Logo />
-      <Search />
+      {children}
     </nav>
   );
 }
@@ -68,7 +108,7 @@ function Logo() {
   );
 }
 
-function Search() {
+function Search({ children }) {
   const [query, setQuery] = useState("");
 
   return (
@@ -80,55 +120,37 @@ function Search() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <NumResult />
+      {children}
     </div>
   );
 }
 
-function NumResult() {
+function NumResult({ animes }) {
   return (
     <p className="search-results">
-      Found <strong>4</strong> results
+      Found <strong>{animes.length}</strong> results
     </p>
   );
 }
 
-function Main() {
-  const [animes, setAnimes] = useState(animesData);
-  const [selectedAnime, setSelectedAnime] = useState(animes[0]);
-
-  function handleSelectedAnime(id) {
-    const newAnime = animes.filter((anime) => anime.mal_id === id);
-    setSelectedAnime(newAnime[0]);
-  }
-
-  return (
-    <main className="main">
-      <ListBox animes={animes} onSelectedAnime={handleSelectedAnime} />
-      <SelectedBox selectedAnime={selectedAnime} />
-    </main>
-  );
+function Main({ children }) {
+  return <main className="main">{children}</main>;
 }
 
-function ListBox({ animes, onSelectedAnime }) {
-  const [isOpen1, setIsOpen1] = useState(true);
+function Box({ children }) {
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen1((open) => !open)}
-      >
-        {isOpen1 ? "–" : "+"}
+      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
+        {isOpen ? "–" : "+"}
       </button>
-      {isOpen1 && (
-        <AnimeList animes={animes} onSelectedAnime={onSelectedAnime} />
-      )}
+      {isOpen && children}
     </div>
   );
 }
 
-function AnimeList(animes, onSelectedAnime) {
+function AnimeList({ animes, onSelectedAnime }) {
   return (
     <ul className="list list-anime">
       {animes?.map((anime) => (
@@ -142,7 +164,7 @@ function AnimeList(animes, onSelectedAnime) {
   );
 }
 
-function Anime(anime, onSelectedAnime) {
+function Anime({ anime, onSelectedAnime }) {
   return (
     <li onClick={() => onSelectedAnime(anime.mal_id)}>
       <img src={anime.image} alt={`${anime.title} cover`} />
@@ -156,22 +178,7 @@ function Anime(anime, onSelectedAnime) {
   );
 }
 
-function SelectedBox(selectedAnime) {
-  const [isOpen2, setIsOpen2] = useState(true);
-  return (
-    <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen2((open) => !open)}
-      >
-        {isOpen2 ? "–" : "+"}
-      </button>
-      {isOpen2 && <AnimeDetail selectedAnime={selectedAnime} />}
-    </div>
-  );
-}
-
-function AnimeDetail(selectedAnime) {
+function AnimeDetail({ selectedAnime }) {
   return (
     <div className="details">
       <header>
